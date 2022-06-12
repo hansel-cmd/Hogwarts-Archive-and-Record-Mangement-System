@@ -5,13 +5,15 @@ from tabulate import tabulate
 from sys import exit
 import os
 
+
+os.system("")
 FIELDNAMES = [
     "name",  "house", "patronus", "wand",
     "species", "ancestry", "gender", "eye_color",
     "hair_color", "date_of_birth",
 ]
+CLEAR = "cls" if os.name == "nt" else "clear"
 
-os.system("")
 
 class Style:
     BLACK = '\033[30m'
@@ -48,9 +50,9 @@ def populate_csv():
     except FileNotFoundError:
         raise FileNotFoundError("Sorry. Student file cannot be found.")
 
-    students = []
+    wizards = []
     for d in data:
-        student = {
+        wizard = {
             "name":             d["name"] or "None",
             "house":            d["house"] or "None",
             "patronus":         d["patronus"] or "None",
@@ -62,16 +64,16 @@ def populate_csv():
             "hair_color":       d["hairColour"] or "None",
             "date_of_birth":    d["dateOfBirth"] or "None"
         }
-        students.append(student)
-        if len(students) >= 10:
+        wizards.append(wizard)
+        if len(wizards) >= 20:
             break
 
     with open(filename, "a", newline="") as file:
         writer = csv.DictWriter(file, fieldnames=FIELDNAMES)
         writer.writeheader()
-        writer.writerows(students)
+        writer.writerows(wizards)
 
-    return True
+    return wizards
 
 
 def display_header():
@@ -114,12 +116,12 @@ def display():
     ...
 
 
-def view_controller(wizards, page=0):
-    ...
+def view_controller(wizards, page):
+    index = page * 5
+    return wizards[index:index + 5]
 
 
 def view(wizards):
-    header = FIELDNAMES
     table = []
     # iterate all wizard dicts in the list
     # get its value and transform into a list.
@@ -130,13 +132,40 @@ def view(wizards):
             row.append(values)
         table.append(row)
 
-    # previous controller
-    # next controller
+
+    current_page = 0
+    max_page = int(len(wizards) / 5)
     
-    print(tabulate(table, header, tablefmt="grid"))
-
-
-
+    print("PAGE: " + Style.RED + str(current_page + 1) + Style.RESET + " of " + \
+            Style.RED + str(max_page) + Style.RESET)
+    print(tabulate(table[current_page:current_page + 5], FIELDNAMES, tablefmt="grid"))
+    
+    # increment to 1 since we displayed wizards prior to this line
+    current_page += 1
+    while True:
+        try:
+            key = input("Press " + Style.YELLOW + "Enter " + Style.RESET + \
+            "to show more (if there is any)... ")    
+        except EOFError:
+            break
+        except KeyboardInterrupt:
+            break
+        
+        if key != "":
+            continue       
+    
+        os.system(CLEAR)
+        if current_page >= max_page:
+            break
+        
+        render = view_controller(table, page=current_page)
+        current_page += 1
+        display_header()
+        display_options()
+        print("PAGE: " + Style.RED + str(current_page) + Style.RESET + \
+                " of " + Style.RED + str(max_page) + Style.RESET)
+        print(tabulate(render, FIELDNAMES, tablefmt="grid"))
+    
 
 
 def get_wizards():
@@ -167,17 +196,18 @@ def main():
         wizards = get_wizards()
     except FileNotFoundError:
         try:
-            populate_csv()
+            wizards = populate_csv()
         except FileNotFoundError:
             exit(Style.RED + "Sorry. Student file cannot be found."  + Style.RESET)
 
-    choice = prompt()
-    if choice == 0:
-        exit(Style.RED + "Program Terminated." + Style.RESET)
-    elif choice == 1:
-        view(wizards)
+    while True:
+        choice = prompt()
+        if choice == 0:
+            exit(Style.RED + "Program Terminated." + Style.RESET)
+        elif choice == 1:
+            view(wizards)
+
+
     
-
-
 if __name__ == "__main__":
     main()
