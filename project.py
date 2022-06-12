@@ -5,6 +5,11 @@ from tabulate import tabulate
 from sys import exit
 import os
 
+FIELDNAMES = [
+    "name",  "house", "patronus", "wand",
+    "species", "ancestry", "gender", "eye_color",
+    "hair_color", "date_of_birth",
+]
 
 os.system("")
 
@@ -58,14 +63,11 @@ def populate_csv():
             "date_of_birth":    d["dateOfBirth"] or "None"
         }
         students.append(student)
+        if len(students) >= 10:
+            break
 
     with open(filename, "a", newline="") as file:
-        fieldnames = [
-            "name",  "house", "patronus", "wand",
-            "species", "ancestry", "gender", "eye_color",
-             "hair_color", "date_of_birth",
-        ]
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer = csv.DictWriter(file, fieldnames=FIELDNAMES)
         writer.writeheader()
         writer.writerows(students)
 
@@ -87,8 +89,8 @@ def display_options():
     ]
     print(Style.WHITE + tabulate(table, header, tablefmt="simple"), "\n")
 
+
 def prompt():
-    
     display_header()
     display_options()
     
@@ -108,24 +110,72 @@ def prompt():
     return int(choice)
 
 
+def display():
+    ...
+
+
+def view_controller(wizards, page=0):
+    ...
+
+
+def view(wizards):
+    header = FIELDNAMES
+    table = []
+    # iterate all wizard dicts in the list
+    # get its value and transform into a list.
+    # tabulate() function needs [[], []] not [{}, {}]
+    for wizard in wizards:
+        row = []
+        for values in wizard.values():
+            row.append(values)
+        table.append(row)
+
+    # previous controller
+    # next controller
+    
+    print(tabulate(table, header, tablefmt="grid"))
+
+
+
+
+
+def get_wizards():
+
+    filename = "students.csv"
+    try:           
+        file = open(filename)
+    except FileNotFoundError:
+        raise FileNotFoundError(f"{filename} cannot be found.")
+    except OSError:
+        raise OSError(f"OS Error happened while accessing {filename}")
+    except Exception as err:
+        raise Exception(f"Unexpected error happened while accessing {filename}")
+
+    with file:
+        reader = csv.DictReader(file)
+        wizards = [row for row in reader]
+
+    return wizards
+
+
 def main():
 
     # Try to Open the student database file
     # Otherwise, try to populate the database
     # If all else fails, exit the program
     try:
-        with open("students.csv") as file:
-            reader = csv.DictReader(file)
+        wizards = get_wizards()
     except FileNotFoundError:
         try:
             populate_csv()
         except FileNotFoundError:
             exit(Style.RED + "Sorry. Student file cannot be found."  + Style.RESET)
 
-    if prompt() == 0:
+    choice = prompt()
+    if choice == 0:
         exit(Style.RED + "Program Terminated." + Style.RESET)
-
-
+    elif choice == 1:
+        view(wizards)
     
 
 
