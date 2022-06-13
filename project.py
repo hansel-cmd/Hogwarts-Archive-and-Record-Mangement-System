@@ -1,5 +1,6 @@
 import json
 import csv
+import re
 import pyfiglet
 from tabulate import tabulate
 from sys import exit
@@ -28,18 +29,6 @@ class Style:
     RESET = '\033[0m'
 
 
-# wizard_id
-# name
-# species = human, half-human, goblin
-# house
-# gender
-# dateOfBirth
-# ancestry
-## eyeColour
-## hairColour
-# patronus
-# hogwartsStudent
-### hogwartsStaff
 def populate_csv():
     filename =  "students.csv"
     dummy_data = "./data/characters.json"
@@ -82,19 +71,18 @@ def display_header():
     print(Style.CYAN + figlet.renderText("Hogwarts"))
 
 
-def display_options():
-    header = ["Option", "Function", "Description"]
-    table = [
-        ["1", "View", "View Wizard Information"],
-        ["2", "Find", "Look for a specific Wizard"],
-        ["0", "Exit", "Exit/Quit the Program"],
-    ]
+def display_options(header, table):
     print(Style.WHITE + tabulate(table, header, tablefmt="simple"), "\n")
 
 
 def prompt():
     display_header()
-    display_options()
+    display_options(["Option", "Function", "Description"], [
+        ["1", "View", "View Wizard Information"],
+        ["2", "Find", "Look for a specific Wizard"],
+        ["3", "About", "About the program"]
+        ["0", "Exit", "Exit/Quit the Program"],
+    ])
     
     while True:
         try:
@@ -112,16 +100,11 @@ def prompt():
     return int(choice)
 
 
-def display():
-    ...
-
-
-def view_controller(wizards, page):
+def pagination(wizards, page):
     index = page * 5
     return wizards[index:index + 5]
 
-
-def view(wizards):
+def to_table_wizards(wizards):
     table = []
     # iterate all wizard dicts in the list
     # get its value and transform into a list.
@@ -132,6 +115,12 @@ def view(wizards):
             row.append(values)
         table.append(row)
 
+    return table
+
+
+def view(wizards):
+    
+    table = to_table_wizards(wizards)
 
     current_page = 0
     max_page = int(len(wizards) / 5)
@@ -145,27 +134,91 @@ def view(wizards):
     while True:
         try:
             key = input("Press " + Style.YELLOW + "Enter " + Style.RESET + \
-            "to show more (if there is any)... ")    
+            "to show more (if there is any) while " + Style.YELLOW + "Space " + \
+                Style.RESET + "to return...")    
         except EOFError:
             break
         except KeyboardInterrupt:
             break
-        
+
+        if key == " ":
+            break
+
         if key != "":
-            continue       
-    
+            continue
+
         os.system(CLEAR)
         if current_page >= max_page:
             break
         
-        render = view_controller(table, page=current_page)
+        render = pagination(table, page=current_page)
         current_page += 1
         display_header()
-        display_options()
+        display_options(["Option", "Function", "Description"], [
+        ["1", "View", "View Wizard Information"],
+        ["2", "Find", "Look for a specific Wizard"],
+        ["0", "Exit", "Exit/Quit the Program"],
+    ])
         print("PAGE: " + Style.RED + str(current_page) + Style.RESET + \
                 " of " + Style.RED + str(max_page) + Style.RESET)
         print(tabulate(render, FIELDNAMES, tablefmt="grid"))
+
+    os.system(CLEAR)
     
+
+def find(wizards):
+    header = ["Lookup Option", "Lookup Description"]
+    table = [
+        ["1.", "name"],
+        ["2.", "house"],
+        ["3.", "patronus"],
+        ["4.", "wand"],
+        ["5.", "species"],
+        ["6.", "ancestry"],
+        ["7.", "gender"],
+        ["8.", "eye_color"],
+        ["9.", "hair_color"],
+        ["10.", "date_of_birth (dd-mm-yyyy)"],
+        ["0.", "Back"]
+    ]
+    
+    display_options(header, table)
+    while True:
+        try:
+            choice = input(Style.YELLOW + "Find wizard using: " + Style.RESET)
+        except EOFError:
+            break
+        except KeyboardInterrupt:
+            break
+
+        if choice not in list(map(str, list(range(11)))):
+            continue
+
+        if choice == "0":
+            break
+
+        kw = input(Style.YELLOW + f"Enter wizard's {FIELDNAMES[int(choice) - 1]}: " + Style.RESET)
+        render = search_wizard(wizards, FIELDNAMES[int(choice) - 1], kw)
+        render = to_table_wizards(render)
+        os.system(CLEAR)
+        display_options(header, table)
+        print(tabulate(render, FIELDNAMES, tablefmt="grid"))
+
+    os.system(CLEAR)
+
+
+def search_wizard(wizards, col, kw):
+    if col == "gender":
+        # so that if kw = male, it will only look up [^fe]male wizards
+        pattern = f"^({kw}).*$"
+    else:
+        pattern = f"^.*({kw}).*$"
+    filtered_wizards = filter(
+        lambda wizard: re.search(pattern, wizard[col], re.IGNORECASE),  
+        wizards
+    )
+
+    return list(filtered_wizards)
 
 
 def get_wizards():
@@ -187,6 +240,9 @@ def get_wizards():
     return wizards
 
 
+def about_program():
+
+
 def main():
 
     # Try to Open the student database file
@@ -194,6 +250,8 @@ def main():
     # If all else fails, exit the program
     try:
         wizards = get_wizards()
+
+        print(wizards)
     except FileNotFoundError:
         try:
             wizards = populate_csv()
@@ -206,6 +264,11 @@ def main():
             exit(Style.RED + "Program Terminated." + Style.RESET)
         elif choice == 1:
             view(wizards)
+        elif choice == 2:
+            os.system(CLEAR)
+            find(wizards)
+        elif choice == 3:
+            about_program()
 
 
     
