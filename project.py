@@ -1,10 +1,6 @@
-import json
-import csv
-import re
-import pyfiglet
+import json, csv, re, pyfiglet, os
 from tabulate import tabulate
 from sys import exit
-import os
 
 
 os.system("")
@@ -44,9 +40,8 @@ def wait():
     os.system(CLEAR)
 
 
-def populate_csv():
+def populate_csv(dummy_data):
     filename =  "students.csv"
-    dummy_data = "./data/characters.json"
 
     try:
         with open(dummy_data) as f:
@@ -69,10 +64,11 @@ def populate_csv():
             "date_of_birth":    d["dateOfBirth"] or "None"
         }
         wizards.append(wizard)
+        # remove to have all characters in the .csv file
         if len(wizards) >= 20:
             break
 
-    with open(filename, "a", newline="") as file:
+    with open(filename, "w", newline="") as file:
         writer = csv.DictWriter(file, fieldnames=FIELDNAMES)
         writer.writeheader()
         writer.writerows(wizards)
@@ -169,6 +165,7 @@ def view(wizards):
             break
         
         render = pagination(table, page=current_page)
+        print(render)
         current_page += 1
         display_header()
         display_options(["Option", "Function", "Description"], [
@@ -257,7 +254,6 @@ def find(wizards):
                 break
 
     os.system(CLEAR)
-    return render
 
 
 def search_wizard(wizards, col, kw):
@@ -355,7 +351,6 @@ def create_csv(filename, wizards, fr="reproduce"):
 
 
 def reproduce(wizards):
-
     while True:
         try:
             choice = input(Style.YELLOW + "Reproduce the whole CSV file (yes/no)? " + \
@@ -384,11 +379,14 @@ def reproduce(wizards):
     
 
 def main():
+    dummy_data = "./data/characters.json"
+
     try:
         wizards = get_wizards()
     except FileNotFoundError:
         try:
-            wizards = populate_csv()
+            wizards = populate_csv(dummy_data)
+            print(wizards)
         except FileNotFoundError:
             exit(Style.RED + "Sorry. Student file cannot be found."  + Style.RESET)
 
