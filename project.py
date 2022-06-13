@@ -2,6 +2,7 @@ import json
 import csv
 import re
 import pyfiglet
+import time
 from tabulate import tabulate
 from sys import exit
 import os
@@ -94,7 +95,7 @@ def prompt():
             exit("Program Terminated." + Style.RESET)
             
 
-        if choice not in ['1', '2', '3', '4','0']:
+        if choice not in ['1', '2', '3', '4', '0']:
             continue
         break
 
@@ -233,7 +234,7 @@ def get_wizards():
         raise FileNotFoundError(f"{filename} cannot be found.")
     except OSError:
         raise OSError(f"OS Error happened while accessing {filename}")
-    except Exception as err:
+    except Exception:
         raise Exception(f"Unexpected error happened while accessing {filename}")
 
     with file:
@@ -241,6 +242,21 @@ def get_wizards():
         wizards = [row for row in reader]
 
     return wizards
+
+
+def wait():
+    while True:
+        try:
+            key = input("Press " + Style.YELLOW + "Enter " + \
+            Style.RESET + "to return...")
+        except EOFError:
+            break
+        except KeyboardInterrupt:
+            break
+
+        if key == "":
+            break
+    os.system(CLEAR)
 
 
 def about_program():
@@ -263,24 +279,59 @@ def about_program():
 
     - Hogwarts, circa 9th-10th Century
     """ + Style.RESET)
+    wait()
+
+
+def create_csv(filename, wizards):
+    try:
+        file = open(filename, "w", newline="")
+    except OSError:
+        raise OSError(f"OS Error happened while creating {filename}")
+    except Exception:
+        raise Exception(f"Unexpected error happened while creating {filename}")
+    
+    with file:
+        writer = csv.DictWriter(file, fieldnames=FIELDNAMES)
+        writer.writeheader()
+        writer.writerows(wizards)
+    print(Style.GREEN + f"{filename} created successfully!")
+
+    wait()
+    return True
+
+
+def reproduce(wizards):
 
     while True:
         try:
-            key = input("Press " + Style.YELLOW + "Enter " + \
-            Style.RESET + "to return...")
+            choice = input(Style.YELLOW + "Reproduce the whole CSV file (yes/no)? " + \
+                Style.RESET).strip()
         except EOFError:
-            break
+            return None
         except KeyboardInterrupt:
-            break
+            return None
 
-        if key == "":
+        if re.search("^([y]*.*)$", choice, re.IGNORECASE):
+            filename = "archives.csv"
+            try:
+                create_csv(filename, wizards)
+            except OSError:
+                raise OSError(f"OS Error happened while creating {filename}")
+            except Exception:
+                raise Exception(f"Unexpected error happened while creating {filename}")
+            return True
+        
+        if re.search("^([n]*.*)$", choice, re.IGNORECASE):
             break
+    
 
     os.system(CLEAR)
 
 
-def reproduce(wizards):
-    ...
+
+
+    
+
 
 
 def main():
