@@ -2,7 +2,6 @@ import json
 import csv
 import re
 import pyfiglet
-import time
 from tabulate import tabulate
 from sys import exit
 import os
