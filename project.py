@@ -80,7 +80,8 @@ def prompt():
     display_options(["Option", "Function", "Description"], [
         ["1", "View", "View Wizard Information"],
         ["2", "Find", "Look for a specific Wizard"],
-        ["3", "About", "About the program"]
+        ["3", "About", "About the program"],
+        ["4", "Reproduce", "Create a CSV copy"],
         ["0", "Exit", "Exit/Quit the Program"],
     ])
     
@@ -93,7 +94,7 @@ def prompt():
             exit("Program Terminated." + Style.RESET)
             
 
-        if choice not in ['1', '2', '0']:
+        if choice not in ['1', '2', '3', '4','0']:
             continue
         break
 
@@ -103,6 +104,7 @@ def prompt():
 def pagination(wizards, page):
     index = page * 5
     return wizards[index:index + 5]
+
 
 def to_table_wizards(wizards):
     table = []
@@ -185,7 +187,7 @@ def find(wizards):
     display_options(header, table)
     while True:
         try:
-            choice = input(Style.YELLOW + "Find wizard using: " + Style.RESET)
+            choice = input(Style.YELLOW + "Find wizard/s using: " + Style.RESET)
         except EOFError:
             break
         except KeyboardInterrupt:
@@ -205,6 +207,7 @@ def find(wizards):
         print(tabulate(render, FIELDNAMES, tablefmt="grid"))
 
     os.system(CLEAR)
+    return render
 
 
 def search_wizard(wizards, col, kw):
@@ -241,6 +244,43 @@ def get_wizards():
 
 
 def about_program():
+    display_header()
+    print("""
+    Welcome to Hogwarts' Archives and Record Management. 
+
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut 
+    labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi 
+    ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum 
+    dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia 
+    deserunt mollit anim id est laborum. 
+
+    Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, 
+    totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta 
+    sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia 
+    consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui 
+    dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora 
+    incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
+
+    - Hogwarts, circa 9th-10th Century
+    """ + Style.RESET)
+
+    while True:
+        try:
+            key = input("Press " + Style.YELLOW + "Enter " + \
+            Style.RESET + "to return...")
+        except EOFError:
+            break
+        except KeyboardInterrupt:
+            break
+
+        if key == "":
+            break
+
+    os.system(CLEAR)
+
+
+def reproduce(wizards):
+    ...
 
 
 def main():
@@ -250,8 +290,6 @@ def main():
     # If all else fails, exit the program
     try:
         wizards = get_wizards()
-
-        print(wizards)
     except FileNotFoundError:
         try:
             wizards = populate_csv()
@@ -268,7 +306,11 @@ def main():
             os.system(CLEAR)
             find(wizards)
         elif choice == 3:
+            os.system(CLEAR)
             about_program()
+        elif choice == 4:
+            os.system(CLEAR)
+            reproduce(wizards)
 
 
     
