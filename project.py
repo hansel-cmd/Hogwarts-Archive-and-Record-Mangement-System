@@ -30,6 +30,21 @@ class Style:
     RESET = '\033[0m'
 
 
+def wait():
+    while True:
+        try:
+            key = input("Press " + Style.YELLOW + "Enter " + \
+            Style.RESET + "to return...")
+        except EOFError:
+            break
+        except KeyboardInterrupt:
+            break
+
+        if key == "":
+            break
+    os.system(CLEAR)
+
+
 def populate_csv():
     filename =  "students.csv"
     dummy_data = "./data/characters.json"
@@ -109,8 +124,8 @@ def pagination(wizards, page):
 
 def to_table_wizards(wizards):
     table = []
-    # iterate all wizard dicts in the list
-    # get its value and transform into a list.
+    # iterate all wizard dicts in the list,
+    # get its value and transform into a different list.
     # tabulate() function needs [[], []] not [{}, {}]
     for wizard in wizards:
         row = []
@@ -172,29 +187,30 @@ def view(wizards):
 def find(wizards):
     header = ["Lookup Option", "Lookup Description"]
     table = [
-        ["1.", "name"],
-        ["2.", "house"],
-        ["3.", "patronus"],
-        ["4.", "wand"],
-        ["5.", "species"],
-        ["6.", "ancestry"],
-        ["7.", "gender"],
-        ["8.", "eye_color"],
-        ["9.", "hair_color"],
+        ["1.",  "name"],
+        ["2.",  "house"],
+        ["3.",  "patronus"],
+        ["4.",  "wand"],
+        ["5.",  "species"],
+        ["6.",  "ancestry"],
+        ["7.",  "gender"],
+        ["8.",  "eye_color"],
+        ["9.",  "hair_color"],
         ["10.", "date_of_birth (dd-mm-yyyy)"],
-        ["0.", "Back"]
+        ["0.",  "Back"]
     ]
     
     display_options(header, table)
+    render = []
     while True:
         try:
-            choice = input(Style.YELLOW + "Find wizard/s using: " + Style.RESET)
+            choice = input(Style.YELLOW + "Find wizard/s using option: " + Style.RESET)
         except EOFError:
             break
         except KeyboardInterrupt:
             break
 
-        if choice not in list(map(str, list(range(11)))):
+        if choice not in list(map(str, list(range(len(table))))):
             continue
 
         if choice == "0":
@@ -206,6 +222,40 @@ def find(wizards):
         os.system(CLEAR)
         display_options(header, table)
         print(tabulate(render, FIELDNAMES, tablefmt="grid"))
+        
+        while True:
+            try:
+                answer = input(Style.YELLOW + \
+                    "Do you want to create a copy of this lookup (yes/no)? " + \
+                    Style.RESET)
+            except EOFError:
+                break
+            except KeyboardInterrupt:
+                break
+
+            if re.search("^([y]+.*)$", answer, re.IGNORECASE):
+                try:
+                    filename = input(Style.YELLOW + \
+                        "Enter filename for this copy (archives.csv is the default name): " + \
+                            Style.RESET)
+                except Exception:
+                    filename = "archives.csv"
+                
+                if filename == "" or not re.search(r"^([\w\d_ -])+$", filename):
+                    filename = "archives.csv"
+
+                try:
+                    create_csv(filename, render, fr="find")
+                except OSError:
+                    raise OSError(f"OS Error happened while creating {filename}")
+                except Exception:
+                    raise Exception(f"Unexpected error happened while creating {filename}")
+
+                display_options(header, table)
+                break
+            
+            if re.search("^([n]+.*)$", answer, re.IGNORECASE):
+                break
 
     os.system(CLEAR)
     return render
@@ -226,7 +276,6 @@ def search_wizard(wizards, col, kw):
 
 
 def get_wizards():
-
     filename = "students.csv"
     try:           
         file = open(filename)
@@ -242,21 +291,6 @@ def get_wizards():
         wizards = [row for row in reader]
 
     return wizards
-
-
-def wait():
-    while True:
-        try:
-            key = input("Press " + Style.YELLOW + "Enter " + \
-            Style.RESET + "to return...")
-        except EOFError:
-            break
-        except KeyboardInterrupt:
-            break
-
-        if key == "":
-            break
-    os.system(CLEAR)
 
 
 def about_program():
@@ -279,10 +313,31 @@ def about_program():
 
     - Hogwarts, circa 9th-10th Century
     """ + Style.RESET)
+
     wait()
 
 
-def create_csv(filename, wizards):
+def create_csv(filename, wizards, fr="reproduce"):
+    if fr == "find":
+        row = []
+        for wizard in wizards:
+            w = {
+                "name":             wizard[0],
+                "house":            wizard[1],
+                "patronus":         wizard[2],
+                "wand":             wizard[3],
+                "species":          wizard[4],
+                "ancestry":         wizard[5],
+                "gender":           wizard[6],
+                "eye_color":        wizard[7],
+                "hair_color":       wizard[8],
+                "date_of_birth":    wizard[9]
+            }
+            row.append(w)
+        wizards = row
+
+    if ".csv" not in filename:
+        filename += ".csv"
     try:
         file = open(filename, "w", newline="")
     except OSError:
@@ -311,7 +366,7 @@ def reproduce(wizards):
         except KeyboardInterrupt:
             return None
 
-        if re.search("^([y]*.*)$", choice, re.IGNORECASE):
+        if re.search("^([y]+.*)$", choice, re.IGNORECASE):
             filename = "archives.csv"
             try:
                 create_csv(filename, wizards)
@@ -321,24 +376,15 @@ def reproduce(wizards):
                 raise Exception(f"Unexpected error happened while creating {filename}")
             return True
         
-        if re.search("^([n]*.*)$", choice, re.IGNORECASE):
+        if re.search("^([n]+.*)$", choice, re.IGNORECASE):
             break
     
-
-    os.system(CLEAR)
-
-
-
-
+    print("\nCreate .csv with specific wizards using lookup.\n")
+    find(wizards)
+    wait()
     
 
-
-
 def main():
-
-    # Try to Open the student database file
-    # Otherwise, try to populate the database
-    # If all else fails, exit the program
     try:
         wizards = get_wizards()
     except FileNotFoundError:
@@ -360,10 +406,8 @@ def main():
             os.system(CLEAR)
             about_program()
         elif choice == 4:
-            os.system(CLEAR)
             reproduce(wizards)
 
 
-    
 if __name__ == "__main__":
     main()
