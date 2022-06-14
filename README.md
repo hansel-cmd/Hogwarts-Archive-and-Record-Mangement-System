@@ -2,12 +2,14 @@
 Video Demo:  [https://youtu.be/azgNvJ3Kn6Y](https://youtu.be/azgNvJ3Kn6Y)
 
 #### Description:
+
 ![main menu](/screenshots/main_menu.png)
 
 The project is a console-based archive and record management system for *Hogwarts School of Witchcraft and Wizardry.*
 The system contains five(5) functionalities namely - ***View, Find, About, Reproduce, Exit***, where:
 
 ***View*** 
+
 ![main menu](/screenshots/view.png)
 
 - shows the records of all wizards present in the system. 
@@ -15,6 +17,7 @@ The system contains five(5) functionalities namely - ***View, Find, About, Repro
 - For displaying the information in a tabular format, `tabulate` module is used.
 
 ***Find***
+
 ![main menu](/screenshots/find_1.png)
 ![main menu](/screenshots/find_2.png)
 
@@ -33,17 +36,20 @@ The system contains five(5) functionalities namely - ***View, Find, About, Repro
 - contains the option to save or create a copy of the record the lookup returns
 
 ***About***
+
 ![main menu](/screenshots/about.png)
 
 - shows the supposed information of the program. To be exact, it is a *lorem ipsum* paragraph.
 
 ***Reproduce***
+
 ![main menu](/screenshots/reproduce.png)
 
 - contains the option to save and create a copy of the whole record the system has OR save and create a copy of the record of certain wizard/s.
 - Calls ***find*** function if the user chooses to save a copy of specific wizards.
 
 ***Exit***
+
 ![main menu](/screenshots/exit.png)
 
 - exits/closes the program
