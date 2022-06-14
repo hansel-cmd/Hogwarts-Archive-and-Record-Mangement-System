@@ -165,7 +165,6 @@ def view(wizards):
             break
         
         render = pagination(table, page=current_page)
-        print(render)
         current_page += 1
         display_header()
         display_options(["Option", "Function", "Description"], [
@@ -237,7 +236,8 @@ def find(wizards):
                 except Exception:
                     filename = "archives.csv"
                 
-                if filename == "" or not re.search(r"^([\w\d_ -])+$", filename):
+                if filename == "" or not re.search(r"^([\w\d_ -])+[.csv]*$", filename):
+                    print("wtf")
                     filename = "archives.csv"
 
                 try:
@@ -386,7 +386,6 @@ def main():
     except FileNotFoundError:
         try:
             wizards = populate_csv(dummy_data)
-            print(wizards)
         except FileNotFoundError:
             exit(Style.RED + "Sorry. Student file cannot be found."  + Style.RESET)
 
